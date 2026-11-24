@@ -311,6 +311,11 @@ tbody tr:hover td{background:#ede9fe;cursor:pointer}
 
 <div class="modal" id="m-hist"><div class="mbox wide"><div id="mh-body"></div>
   <div style="display:flex;gap:10px;margin-top:14px"><button class="btn sec" style="flex:1" onclick="cerrar('m-hist')">Cerrar</button><button class="btn" style="flex:1" id="mh-etq">🏷️ Reimprimir etiqueta</button></div>
+  <button class="btn sec big" id="mh-borrar" style="color:var(--bad);border-color:#fca5a5">🗑️ Borrar este lote</button>
+  <div id="mh-conf" style="display:none;margin-top:10px;background:#fee2e2;border-radius:12px;padding:12px;color:#991b1b;font-weight:600">
+    ¿Seguro? Se borra el lote y todo su recorrido. No se puede deshacer.
+    <div style="display:flex;gap:10px;margin-top:10px"><button class="btn sec" style="flex:1" onclick="$('mh-conf').style.display='none'">No</button><button class="btn" style="flex:1;background:var(--bad)" id="mh-si">Sí, borrar</button></div>
+  </div>
 </div></div>
 
 <datalist id="dl-clientes"></datalist>
@@ -684,6 +689,10 @@ function verLote(lote){
     '<div>'+esc(m['FECHA HORA'])+' · Recibió '+esc(m['UNDS RECIBIDAS'])+' de '+esc(m['VIENE DE PASO'])+(m['RECIBE DE']&&m['RECIBE DE']!=='—'?' ('+esc(m['RECIBE DE'])+')':'')+' · Entregó '+esc(m['UNDS ENTREGADAS'])+' a '+esc(m['ENTREGA A PASO'])+(m['ENTREGA A']?' ('+esc(m['ENTREGA A'])+')':'')+
     (m.INCONSISTENCIA==='SI'?' · <b style="color:var(--bad)">Inconsistencia</b>'+(m.OBSERVACION?': '+esc(m.OBSERVACION):''):'')+'</div></div>'}).join(''):'<div class="hint">Sin movimientos registrados en la app (lote migrado).</div>')+'</div>';
   $('mh-etq').onclick=function(){cerrar('m-hist');mostrarEtiqueta(l)};
+  $('mh-conf').style.display='none';
+  $('mh-borrar').onclick=function(){$('mh-conf').style.display='block'};
+  $('mh-si').onclick=function(){loading(true);
+    api('borrarLote',S.clave,l.LOTE).then(function(r){loading(false);cerrar('m-hist');toast('Lote '+r.lote+' borrado','ok');cargarJefe(false)}).catch(err)};
   abrir('m-hist');
 }
 function exportar(){
