@@ -200,6 +200,7 @@ tbody tr:hover td{background:#ede9fe;cursor:pointer}
       <div><label>Color <i>*</i></label><select id="c-color"></select></div>
       <div><label>Talla <i>*</i></label><select id="c-talla"></select></div>
       <div><label>Cantidad <i>*</i></label><input type="number" id="c-cant" min="1" inputmode="numeric" placeholder="0"></div>
+      <div><label>Código de barras <span style="font-weight:400;color:var(--mut)">(automático)</span></label><input id="c-cod" readonly tabindex="-1" placeholder="Se llena solo" style="background:#f7f5ff;font-weight:700;letter-spacing:1px;color:var(--pd)"><div class="hint" id="c-cod-h"></div></div>
     </div><br>
     <div class="row">
       <div><label>Entrega a</label><select id="c-epaso" disabled></select></div>
@@ -539,7 +540,18 @@ function abrirArea(k){
 }
 
 /* ---------- CORTE ---------- */
+/* Código de barras: se busca con referencia + color + talla */
+function claveProducto(ref,color,talla){var r=N(ref).replace(/[\s\/\-.]/g,''),c=N(color);if(c==='NEGRA')c='NEGRO';
+  var t=N(talla).replace(/\s/g,'');t={XXL:'2XL',XXXL:'3XL',XXS:'2XS'}[t]||t;return r+'|'+c+'|'+t}
+function actualizarCodigo(){
+  var r=val('c-ref'),c=val('c-color'),t=val('c-talla');
+  if(!r||!c||!t){val('c-cod','');$('c-cod-h').textContent='Escribe referencia, color y talla';return}
+  var cod=(S.init.codigos||{})[claveProducto(r,c,t)]||'';
+  val('c-cod',cod);
+  $('c-cod-h').innerHTML=cod?'<span style="color:var(--ok)">✔ Producto encontrado</span>':'<span class="warn">⚠ No hay código para '+esc(r.toUpperCase()+' '+c+' '+t)+'</span>';
+}
 function abrirCorte(){
+  ['c-ref','c-color','c-talla'].forEach(function(id){$(id).oninput=actualizarCodigo;$(id).onchange=actualizarCodigo});
   opts('c-operario',personasDe('CORTE'),'Selecciona…');
   opts('c-color',S.init.colores||['NEGRO','BEIGE','COCOA']);
   opts('c-talla',S.init.tallas||['XS','S','M','L','XL','2XL','3XL']);
@@ -550,6 +562,7 @@ function abrirCorte(){
   opts('c-epaso',[est],false);
   var rec=personasDe('ESTANTERIA');if(!rec.length)rec=S.init.encargadasEstanteria||[];
   opts('c-ea',rec,rec.length>1?'Selecciona…':false);try{var m2=localStorage.getItem('rec_CORTE');if(m2)val('c-ea',m2)}catch(e){}
+  actualizarCodigo();
   show('corte');setTimeout(function(){$('c-lote').focus()},150);
   if(S.pendLote){val('c-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info'}
 }
@@ -563,8 +576,8 @@ function guardarCorte(){
   try{localStorage.setItem('op_CORTE',d.operario);localStorage.setItem('rec_CORTE',d.entregaA)}catch(e){}
   loading(true);
   api('registrarCorte',S.clave,d).then(function(r){loading(false);toast('Lote '+r.lote+' registrado ✔','ok');
-    mostrarEtiqueta({LOTE:r.lote,TRAZO:d.trazo.toUpperCase(),REFERENCIA:d.referencia.toUpperCase(),COLOR:d.color.toUpperCase(),TALLA:d.talla.toUpperCase(),CANTIDAD:d.cantidad,CLIENTE:d.cliente.toUpperCase(),'FECHA INGRESO A PLANTA':d.fecha});
-    ['c-lote','c-trazo','c-ref','c-cant'].forEach(function(i){val(i,'')});
+    mostrarEtiqueta({LOTE:r.lote,'CODIGO DE BARRAS':r.codigo||'',TRAZO:d.trazo.toUpperCase(),REFERENCIA:d.referencia.toUpperCase(),COLOR:d.color.toUpperCase(),TALLA:d.talla.toUpperCase(),CANTIDAD:d.cantidad,CLIENTE:d.cliente.toUpperCase(),'FECHA INGRESO A PLANTA':d.fecha});
+    ['c-lote','c-trazo','c-ref','c-cant'].forEach(function(i){val(i,'')});actualizarCodigo();
   }).catch(err);
 }
 
@@ -576,7 +589,7 @@ function codigoDe(t){t=String(t||'').trim();var m=/[?&]lote=([^&#]+)/.exec(t);re
 function mostrarEtiqueta(l){
   $('etq-qr').innerHTML='';
   new QRCode($('etq-qr'),{text:urlLote(l.LOTE),width:120,height:120,correctLevel:QRCode.CorrectLevel.L});
-  $('etq-d').innerHTML='<b>LOTE '+esc(l.LOTE)+'</b>'+(l.TRAZO?'Trazo '+esc(l.TRAZO)+'<br>':'')+esc(l.REFERENCIA)+' · '+esc(l.COLOR)+' · T. '+esc(l.TALLA)+'<br>'+esc(l.CANTIDAD)+' unds · '+esc(l.CLIENTE)+'<br>Ingreso: '+esc(l['FECHA INGRESO A PLANTA']);
+  $('etq-d').innerHTML='<b>LOTE '+esc(l.LOTE)+'</b>'+(l.TRAZO?'Trazo '+esc(l.TRAZO)+'<br>':'')+esc(l.REFERENCIA)+' · '+esc(l.COLOR)+' · T. '+esc(l.TALLA)+'<br>'+esc(l.CANTIDAD)+' unds · '+esc(l.CLIENTE)+'<br>Ingreso: '+esc(l['FECHA INGRESO A PLANTA'])+(l['CODIGO DE BARRAS']?'<br>Cód. '+esc(l['CODIGO DE BARRAS']):'');
   abrir('m-etq');
 }
 function imprimirEtq(){
@@ -804,8 +817,8 @@ function pintarJefe(){
         if(e==='ENTREGADO'&&l.ESTADO!=='ENTREGADO')return false;
         if(e==='INC'&&l.INCONSISTENCIA!=='SI')return false;
         if(s&&l['ESTACION ACTUAL']!==s)return false;return true}).slice(0,800);
-      $('jt').innerHTML='<table><thead><tr><th>Trazo</th><th>Lote</th><th>Referencia</th><th>Color</th><th>Talla</th><th>Cliente</th><th>Cant.</th><th>Pasa a ensamble</th><th>Estado</th><th>Estación · Paso</th><th>Responsable</th><th>Entrega a</th><th>Recib./Entreg.</th><th>Incons.</th><th>Actualizado</th></tr></thead><tbody>'+
-      S._rows.map(function(l){return '<tr onclick="verLote(\''+esc(l.LOTE)+'\')"><td>'+esc(l.TRAZO)+'</td><td><b>'+esc(l.LOTE)+'</b></td><td>'+esc(l.REFERENCIA)+'</td><td>'+esc(l.COLOR)+'</td><td>'+esc(l.TALLA)+'</td><td>'+esc(l.CLIENTE)+'</td><td>'+esc(l.CANTIDAD)+'</td><td>'+esc(l['FECHA PASO A ENSAMBLE'])+'</td><td>'+tagEstado(l.ESTADO)+'</td><td>'+esc(l['ESTACION ACTUAL'])+(l['PASO ACTUAL']?' · '+esc(l['PASO ACTUAL']):'')+'</td><td>'+esc(l.RESPONSABLE)+'</td><td>'+esc(l['ENTREGA A PASO'])+(l['ENTREGA A']?' · '+esc(l['ENTREGA A']):'')+'</td><td>'+esc(l['ULTIMAS UNDS RECIBIDAS'])+' / '+esc(l['ULTIMAS UNDS ENTREGADAS'])+'</td><td>'+(l.INCONSISTENCIA==='SI'?'<span class="tag r">SÍ</span>':l.INCONSISTENCIA==='NO'?'<span class="tag g">NO</span>':'')+'</td><td>'+esc(l['ULTIMA ACTUALIZACION'])+'</td></tr>'}).join('')+'</tbody></table>'};
+      $('jt').innerHTML='<table><thead><tr><th>Trazo</th><th>Lote</th><th>Referencia</th><th>Color</th><th>Talla</th><th>Cliente</th><th>Cant.</th><th>Cód. barras</th><th>Pasa a ensamble</th><th>Estado</th><th>Estación · Paso</th><th>Responsable</th><th>Entrega a</th><th>Recib./Entreg.</th><th>Incons.</th><th>Actualizado</th></tr></thead><tbody>'+
+      S._rows.map(function(l){return '<tr onclick="verLote(\''+esc(l.LOTE)+'\')"><td>'+esc(l.TRAZO)+'</td><td><b>'+esc(l.LOTE)+'</b></td><td>'+esc(l.REFERENCIA)+'</td><td>'+esc(l.COLOR)+'</td><td>'+esc(l.TALLA)+'</td><td>'+esc(l.CLIENTE)+'</td><td>'+esc(l.CANTIDAD)+'</td><td>'+esc(l['CODIGO DE BARRAS'])+'</td><td>'+esc(l['FECHA PASO A ENSAMBLE'])+'</td><td>'+tagEstado(l.ESTADO)+'</td><td>'+esc(l['ESTACION ACTUAL'])+(l['PASO ACTUAL']?' · '+esc(l['PASO ACTUAL']):'')+'</td><td>'+esc(l.RESPONSABLE)+'</td><td>'+esc(l['ENTREGA A PASO'])+(l['ENTREGA A']?' · '+esc(l['ENTREGA A']):'')+'</td><td>'+esc(l['ULTIMAS UNDS RECIBIDAS'])+' / '+esc(l['ULTIMAS UNDS ENTREGADAS'])+'</td><td>'+(l.INCONSISTENCIA==='SI'?'<span class="tag r">SÍ</span>':l.INCONSISTENCIA==='NO'?'<span class="tag g">NO</span>':'')+'</td><td>'+esc(l['ULTIMA ACTUALIZACION'])+'</td></tr>'}).join('')+'</tbody></table>'};
     ['jf-q','jf-e','jf-s'].forEach(function(i){$(i).oninput=f;$(i).onchange=f});f();
   }
   if(S.jt==='movs'||S.jt==='inc'){
@@ -840,7 +853,7 @@ function verLote(lote){
   var ms=J.movimientos.filter(function(m){return String(m.LOTE)===String(lote)}).slice().reverse();
   if(!l)return;
   $('mh-body').innerHTML='<h3>📦 Lote '+esc(l.LOTE)+(l.TRAZO?' · Trazo '+esc(l.TRAZO):'')+' '+tagEstado(l.ESTADO)+'</h3><div class="chips" style="margin-bottom:16px">'+
-    ['REFERENCIA','COLOR','TALLA','CLIENTE'].map(function(k){return '<span class="chip">'+esc(l[k])+'</span>'}).join('')+'<span class="chip">'+esc(l.CANTIDAD)+' unds</span><span class="chip">Ingreso '+esc(l['FECHA INGRESO A PLANTA'])+'</span>'+
+    ['REFERENCIA','COLOR','TALLA','CLIENTE'].map(function(k){return '<span class="chip">'+esc(l[k])+'</span>'}).join('')+'<span class="chip">'+esc(l.CANTIDAD)+' unds</span>'+(l['CODIGO DE BARRAS']?'<span class="chip">Cód. '+esc(l['CODIGO DE BARRAS'])+'</span>':'')+'<span class="chip">Ingreso '+esc(l['FECHA INGRESO A PLANTA'])+'</span>'+
     (l['UNDS ENTREGADAS A LOGISTICA']!==''?'<span class="chip g">Entregó a logística: '+esc(l['UNDS ENTREGADAS A LOGISTICA'])+' u</span>':'')+
     (Number(l['DIFERENCIA DE UNDS'])?'<span class="chip r">Diferencia total: '+esc(l['DIFERENCIA DE UNDS'])+'</span>':'')+'</div>'+
     '<h3>Recorrido</h3><div class="tl">'+(ms.length?ms.map(function(m){return '<div class="e '+(m.INCONSISTENCIA==='SI'?'r':'')+'"><b>'+esc(m.PASO)+'</b> · '+esc(m.OPERARIO)+
