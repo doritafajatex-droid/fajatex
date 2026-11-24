@@ -404,7 +404,9 @@ function show(v){document.querySelectorAll('.view').forEach(function(x){x.classL
 // Enlaces ocultos:  .../exec?vista=jefe  (back office con clave)   .../exec?vista=tablero  (front office para TV)
 function api(fn){var args=[].slice.call(arguments,1);
   if(EN_APPS_SCRIPT)return new Promise(function(ok,ko){
-    var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ko(e)});r[fn].apply(r,args)});
+    var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ko(e)});
+    if(typeof r[fn]!=='function')return ko(new Error('Falta actualizar Code.gs en Apps Script (no existe '+fn+'). Pega el Code.gs nuevo y publica una Nueva versión.'));
+    r[fn].apply(r,args)});
   return jsonp({accion:'api',fn:fn,args:JSON.stringify(args)}).then(function(r){if(!r.ok)throw new Error(r.error);return r.data})}
 /* Conexión con Apps Script cuando la página está publicada en GitHub Pages */
 function jsonp(params){return new Promise(function(ok,ko){
