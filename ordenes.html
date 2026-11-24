@@ -436,7 +436,8 @@ function comboize(id,kind){
   var act=0,vis=[];
   function num(v){return kind==='paso'?NUMS[v]:NUMP[v]}
   function etq(v){var n=num(v);return (n?n+' · ':'')+v}
-  function items(){return [].slice.call(sel.options).map(function(o){return o.value}).filter(String)}
+  function items(){var it=[].slice.call(sel.options).map(function(o){return o.value}).filter(String);
+    if(kind==='paso')it.sort(function(x,y){return (Number(num(x))||999)-(Number(num(y))||999)});return it}
   function filtrar(q){q=String(q||'').trim();var it=items();if(!q)return it;
     var qq=q.replace(',','.');
     if(/^\d+(\.\d*)?$/.test(qq)){
@@ -481,6 +482,14 @@ function hace(iso){if(!iso)return'';var m=Math.round((Date.now()-new Date(iso))/
 
 /* ---------- datos maestros ---------- */
 function estacionDePaso(p){var x=(S.init.pasos||[]).filter(function(z){return N(z.paso)===N(p)})[0];return x?x.estacion:''}
+/* Llena un campo de persona: todos los nombres, y si el paso tiene una sola persona queda elegida */
+function llenarPersonas(id,paso){var l=personasPaso(paso),st=paso?personasDe(estacionDePaso(paso)):[];
+  opts(id,l,l.length>1?'Selecciona…':false);if(st.length===1)val(id,st[0])}
+function todosNombres(){return S.init.personal.map(function(p){return p.nombre})}
+// Primero las personas de ese paso y luego todas las demás, para que siempre aparezcan nombres
+function personasPaso(paso){var l=paso?personasDe(estacionDePaso(paso)):[];
+  if(l.length===1&&N(l[0])==='LOGISTICA')return l;
+  return l.concat(todosNombres().filter(function(n){return l.indexOf(n)<0}))}
 function personasDe(est){
   var l=S.init.personal.filter(function(p){return p.estaciones.indexOf(est)>-1}).map(function(p){return p.nombre});
   if(!l.length&&est==='LOGISTICA')l=['LOGÍSTICA'];
@@ -645,7 +654,7 @@ function abrirLogistica(){
   opts('l-operario',personasDe('LOGISTICA'),'Selecciona…');
   try{var m=localStorage.getItem('op_LOGISTICA');if(m)val('l-operario',m)}catch(e){}
   opts('l-vpaso',todosPasos().filter(function(p){return N(p)!=='LOGISTICA'&&N(p)!=='CORTE'}));
-  $('l-vpaso').onchange=function(){var l=personasDe(estacionDePaso(val('l-vpaso')));opts('l-rde',l,l.length>1?'Selecciona…':false)};
+  $('l-vpaso').onchange=function(){llenarPersonas('l-rde',val('l-vpaso'))};
   $('l-rec').oninput=difLog;
   limpiarLogistica();show('logistica');setTimeout(function(){$('l-lote').focus()},150);
   if(S.pendLote){val('l-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info';cargarLoteLog()}
@@ -695,10 +704,10 @@ function abrirEstacion(k){
   var ps=pasosDe(k);opts('e-paso',ps,ps.length>1?'Selecciona…':false);
   opts('e-vpaso',todosPasos().filter(function(p){return N(p)!=='LOGISTICA'}));
   opts('e-epaso',todosPasos().filter(function(p){return N(p)!=='CORTE'}));
-  $('e-vpaso').onchange=function(){opts('e-rde',personasDe(estacionDePaso(val('e-vpaso'))))};
-  $('e-epaso').onchange=function(){var l=personasDe(estacionDePaso(val('e-epaso')));opts('e-ea',l,l.length>1?'Selecciona…':false)};
+  $('e-vpaso').onchange=function(){llenarPersonas('e-rde',val('e-vpaso'))};
+  $('e-epaso').onchange=function(){llenarPersonas('e-ea',val('e-epaso'))};
   $('e-paso').onchange=function(){var s=siguientePaso(val('e-paso'));if(s){val('e-epaso',s);$('e-epaso').onchange()}};
-  opts('e-rde',[]);opts('e-ea',[]);
+  opts('e-rde',todosNombres());opts('e-ea',todosNombres());
   ['e-rec','e-ent'].forEach(function(id){$(id).oninput=difUnds});
   try{var mem=localStorage.getItem('op_'+k);if(mem)val('e-operario',mem)}catch(e){}
   limpiarEst();show('est');setTimeout(function(){$('e-lote').focus()},150);
