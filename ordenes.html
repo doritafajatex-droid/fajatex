@@ -173,10 +173,9 @@ tbody tr:hover td{background:#ede9fe;cursor:pointer}
   <div class="card">
     <h3>Número de lote</h3>
     <div class="lote-bar">
-      <input id="c-lote" placeholder="Escanea o escribe el lote" autocomplete="off">
-      <button class="btn scan" onclick="escanear(function(t){val('c-lote',t)})">📷 Escanear</button>
+      <input id="c-lote" placeholder="Escribe el número de lote" autocomplete="off">
     </div>
-    <div class="hint">Funciona con la cámara del celular o tablet, o con lector de código de barras (pistola).</div>
+    <div class="hint">Escribe el número de lote del paquete.</div>
   </div>
   <div class="card">
     <h3>Datos del lote</h3>
@@ -194,7 +193,7 @@ tbody tr:hover td{background:#ede9fe;cursor:pointer}
     </div><br>
     <div class="row">
       <div><label>Entrega a</label><select id="c-epaso" disabled></select></div>
-      <div><label>Recibe</label><select id="c-ea" disabled></select></div>
+      <div><label>Recibe en Estantería <i>*</i></label><select id="c-ea"></select></div>
     </div>
     <button class="btn big" onclick="guardarCorte()">💾 Registrar lote</button>
   </div>
@@ -432,19 +431,19 @@ function abrirCorte(){
   // Corte solo entrega a Estantería (Marly Zuluaga)
   var est=todosPasos().filter(function(p){return N(p)==='ESTANTERIA'})[0]||'Estantería';
   opts('c-epaso',[est],false);
-  var rec=personasDe('ESTANTERIA');if(!rec.length)rec=[S.init.jefePlanta||'ZULUAGA VANEGAS MARLY'];
-  opts('c-ea',rec,false);
+  var rec=personasDe('ESTANTERIA');if(!rec.length)rec=S.init.encargadasEstanteria||[];
+  opts('c-ea',rec,'Selecciona…');try{var m2=localStorage.getItem('rec_CORTE');if(m2)val('c-ea',m2)}catch(e){}
   show('corte');setTimeout(function(){$('c-lote').focus()},150);
   if(S.pendLote){val('c-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info'}
 }
 function guardarCorte(){
   var d={operario:val('c-operario'),lote:val('c-lote'),trazo:val('c-trazo'),referencia:val('c-ref'),color:val('c-color'),talla:val('c-talla'),
     cantidad:val('c-cant'),fecha:val('c-fecha'),cliente:val('c-cliente'),entregaPaso:val('c-epaso'),entregaA:val('c-ea')};
-  var ids={operario:'c-operario',lote:'c-lote',trazo:'c-trazo',referencia:'c-ref',color:'c-color',talla:'c-talla',cantidad:'c-cant',fecha:'c-fecha',cliente:'c-cliente'};
+  var ids={entregaA:'c-ea',operario:'c-operario',lote:'c-lote',trazo:'c-trazo',referencia:'c-ref',color:'c-color',talla:'c-talla',cantidad:'c-cant',fecha:'c-fecha',cliente:'c-cliente'};
   var falta=Object.keys(ids).filter(function(k){var bad=!d[k];$(ids[k]).classList.toggle('bad-f',bad);return bad});
   if(falta.length)return toast('Completa todos los campos obligatorios','err');
   if(!(Number(d.cantidad)>0))return toast('La cantidad debe ser mayor que 0','err');
-  try{localStorage.setItem('op_CORTE',d.operario)}catch(e){}
+  try{localStorage.setItem('op_CORTE',d.operario);localStorage.setItem('rec_CORTE',d.entregaA)}catch(e){}
   loading(true);
   api('registrarCorte',S.clave,d).then(function(r){loading(false);toast('Lote '+r.lote+' registrado ✔','ok');
     mostrarEtiqueta({LOTE:r.lote,TRAZO:d.trazo.toUpperCase(),REFERENCIA:d.referencia.toUpperCase(),COLOR:d.color.toUpperCase(),TALLA:d.talla.toUpperCase(),CANTIDAD:d.cantidad,CLIENTE:d.cliente.toUpperCase(),'FECHA INGRESO A PLANTA':d.fecha});
@@ -502,8 +501,8 @@ function pararScanner(){SCAN_CB=null;if(QR){var q=QR;QR=null;q.stop().then(funct
 
 /* ---------- ESTANTERÍA ---------- */
 function abrirEstanteria(){
-  var ps=personasDe('ESTANTERIA');if(!ps.length)ps=[S.init.jefePlanta||'ZULUAGA VANEGAS MARLY'];
-  opts('s-operario',ps,false);
+  var ps=personasDe('ESTANTERIA');if(!ps.length)ps=S.init.encargadasEstanteria||[];
+  opts('s-operario',ps,'Selecciona…');try{var m3=localStorage.getItem('op_ESTANTERIA');if(m3)val('s-operario',m3)}catch(e){}
   limpiarEstanteria();show('estanteria');setTimeout(function(){$('s-lote').focus()},150);
   if(S.pendLote){val('s-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info';cargarLoteEst()}
 }
@@ -526,6 +525,7 @@ function cargarLoteEst(){
 function guardarEstanteria(){
   var d={lote:val('s-lote'),operario:val('s-operario'),fecha:val('s-fecha')};
   if(!d.lote)return toast('Escanea el lote','err');
+  if(!d.operario){$('s-operario').classList.add('bad-f');return toast('Elige la encargada','err')}
   if(!d.fecha){$('s-fecha').classList.add('bad-f');return toast('Pon la fecha en que pasa a Ensamble','err')}
   try{localStorage.setItem('op_ESTANTERIA',d.operario)}catch(e){}
   loading(true);
