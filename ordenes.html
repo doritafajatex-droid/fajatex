@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<!-- Librerías de GitHub: html5-qrcode (mebjas/html5-qrcode) y qrcodejs (davidshimjs/qrcodejs) -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#6d28d9;--p2:#7c3aed;--pd:#3b0764;--pl:#f5f3ff;--pm:#ddd6fe;--ok:#059669;--bad:#dc2626;--warn:#d97706;--tx:#1e1b2e;--mut:#6b6880}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Poppins,system-ui,sans-serif;background:var(--pl);color:var(--tx);min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.top{background:linear-gradient(120deg,var(--pd),var(--p));color:#fff;padding:14px 22px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:0 4px 18px #3b076440}
+.top h1{font-size:19px;font-weight:700;letter-spacing:.3px}
+.top small{opacity:.75;font-size:12px;display:block;font-weight:400}
+.top .sp{flex:1}
+.btn-ghost{background:#ffffff22;color:#fff;border:1px solid #ffffff44;border-radius:10px;padding:8px 14px;font-size:14px}
+.wrap{max-width:1100px;margin:0 auto;padding:22px}
+.view{display:none}.view.on{display:block}
+
+/* HOME */
+.hero{text-align:center;margin:18px 0 26px}
+.hero h2{font-size:26px;color:var(--pd)}
+.hero p{color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.tile{border:none;border-radius:20px;padding:26px 18px;background:#fff;box-shadow:0 6px 20px #6d28d91a;text-align:left;display:flex;flex-direction:column;gap:10px;transition:.15s;border:2px solid transparent}
+.tile:hover{transform:translateY(-3px);border-color:var(--pm)}
+.tile .ic{width:48px;height:48px;border-radius:14px;background:var(--pl);display:grid;place-items:center;font-size:24px}
+.tile b{font-size:18px;color:var(--pd)}
+.tile span{font-size:13px;color:var(--mut)}
+.tile.jefe{grid-column:1/-1;background:linear-gradient(120deg,var(--pd),var(--p2));}
+.tile.jefe b,.tile.jefe span{color:#fff}.tile.jefe .ic{background:#ffffff22}
+.tile.tv{background:#1e1b2e}.tile.tv b,.tile.tv span{color:#fff}.tile.tv .ic{background:#ffffff1a}
+.num{font-size:12px;font-weight:700;color:var(--p2);letter-spacing:1px}
+
+/* FORMS */
+.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 6px 20px #6d28d912;margin-bottom:18px}
+.card h3{color:var(--pd);font-size:17px;margin-bottom:14px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;font-size:13px;font-weight:600;color:var(--pd);margin-bottom:5px}
+label i{color:var(--bad);font-style:normal}
+input,select,textarea{width:100%;padding:13px 14px;border:2px solid var(--pm);border-radius:12px;font-size:16px;font-family:inherit;background:#fff;color:var(--tx)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p2);box-shadow:0 0 0 4px #7c3aed22}
+.bad-f{border-color:var(--bad)!important}
+.lote-bar{display:flex;gap:10px;flex-wrap:wrap}.lote-bar input{flex:1;min-width:200px}
+.lote-bar input{font-size:22px;font-weight:700;letter-spacing:1px}
+.btn{border:none;border-radius:12px;padding:13px 20px;font-size:16px;font-weight:600;background:var(--p);color:#fff;white-space:nowrap}
+.btn:hover{background:var(--p2)}
+.btn.sec{background:var(--pl);color:var(--p);border:2px solid var(--pm)}
+.btn.big{width:100%;padding:18px;font-size:19px;margin-top:8px}
+.btn:disabled{opacity:.5}
+.scan{background:var(--pd)}
+.toggle{display:flex;gap:12px}
+.toggle button{flex:1;padding:18px;font-size:19px;font-weight:700;border-radius:14px;border:3px solid var(--pm);background:#fff;color:var(--mut)}
+.toggle button.si.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.toggle button.no.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.info{background:var(--pl);border:2px dashed var(--pm);border-radius:14px;padding:14px 16px;display:none;margin-top:14px}
+.info.on{display:block}
+.info .t{font-size:20px;font-weight:800;color:var(--pd)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{background:#fff;border:1px solid var(--pm);border-radius:20px;padding:3px 10px;font-size:13px}
+.chip.r{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.chip.g{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
+.hint{font-size:12px;color:var(--mut);margin-top:4px}
+.warn{color:var(--warn);font-weight:600}
+.st-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.st-head .ic{font-size:30px}
+.st-head h2{color:var(--pd);font-size:24px}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:#1e1b2ecc;display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:440px;max-height:92vh;overflow:auto}
+.mbox.wide{max-width:900px}
+.mbox h3{color:var(--pd);margin-bottom:12px}
+#reader{width:100%;border-radius:14px;overflow:hidden;background:#000;min-height:220px}
+#reader video{object-fit:cover}
+.flash{position:absolute;inset:0;border-radius:14px;background:#22c55e;opacity:0;pointer-events:none;transition:opacity .35s}
+.flash.on{opacity:.55;transition:none}
+.etq{border:2px solid #000;border-radius:10px;padding:12px;display:flex;gap:14px;align-items:center;margin:10px 0}
+.etq .q{flex:none}
+.etq .d{font-size:13px;line-height:1.5}
+.etq .d b{font-size:22px;display:block}
+
+/* TOAST / LOADER */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120px);background:var(--tx);color:#fff;padding:14px 22px;border-radius:14px;font-weight:600;transition:.3s;z-index:90;max-width:92vw;text-align:center}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--bad)}
+.load{position:fixed;inset:0;background:#ffffffaa;display:none;place-items:center;z-index:80}
+.load.on{display:grid}
+.spin{width:46px;height:46px;border:5px solid var(--pm);border-top-color:var(--p);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* JEFE */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{border:2px solid var(--pm);background:#fff;color:var(--p);padding:9px 16px;border-radius:30px;font-weight:600;font-size:14px}
+.tabs button.on{background:var(--p);color:#fff;border-color:var(--p)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 6px 20px #6d28d912;border-left:6px solid var(--p)}
+.kpi .v{font-size:30px;font-weight:800;color:var(--pd)}
+.kpi .l{font-size:13px;color:var(--mut)}
+.kpi.r{border-left-color:var(--bad)}.kpi.g{border-left-color:var(--ok)}
+.bars .b{display:grid;grid-template-columns:110px 1fr 120px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.bars .track{background:var(--pl);border-radius:8px;height:22px;overflow:hidden}
+.bars .fill{background:linear-gradient(90deg,var(--p),var(--p2));height:100%;border-radius:8px}
+.tbl-wrap{overflow:auto;max-height:62vh;border-radius:12px;border:1px solid var(--pm)}
+table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}
+th{background:var(--pd);color:#fff;position:sticky;top:0;padding:10px 8px;text-align:left;white-space:nowrap;font-weight:600}
+td{padding:9px 8px;border-bottom:1px solid #eee;white-space:nowrap}
+tr:nth-child(even) td{background:#faf8ff}
+tbody tr:hover td{background:#ede9fe;cursor:pointer}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{width:auto;flex:1;min-width:150px;padding:10px 12px;font-size:14px}
+.tag{padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block}
+.tag.r{background:#fee2e2;color:#991b1b}.tag.g{background:#d1fae5;color:#065f46}.tag.p{background:var(--pm);color:var(--pd)}.tag.y{background:#fef3c7;color:#92400e}
+.tl{border-left:3px solid var(--pm);margin-left:8px;padding-left:16px}
+.tl .e{position:relative;margin-bottom:14px}
+.tl .e:before{content:'';position:absolute;left:-24px;top:4px;width:13px;height:13px;border-radius:50%;background:var(--p);border:3px solid #fff;box-shadow:0 0 0 2px var(--p)}
+.tl .e.r:before{background:var(--bad);box-shadow:0 0 0 2px var(--bad)}
+.tl .e b{color:var(--pd)}
+.tl .e div{font-size:13px;color:var(--mut)}
+
+/* TABLERO */
+#v-tablero{background:#1a0b2e;min-height:100vh;color:#fff}
+.tv-top{display:flex;align-items:center;gap:16px;padding:14px 22px;background:linear-gradient(120deg,#3b0764,#6d28d9)}
+.tv-top h1{font-size:24px;font-weight:800}
+.live{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;background:#ffffff1a;padding:6px 12px;border-radius:20px}
+.dot{width:11px;height:11px;border-radius:50%;background:#22c55e;animation:pl 1.6s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 #22c55eaa}70%{box-shadow:0 0 0 10px #22c55e00}100%{box-shadow:0 0 0 0 #22c55e00}}
+.clock{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;padding:14px;height:calc(100vh - 70px)}
+.col{background:#2a1450;border-radius:16px;display:flex;flex-direction:column;overflow:hidden}
+.col h2{font-size:17px;padding:12px 14px;background:#ffffff10;display:flex;justify-content:space-between;align-items:center;letter-spacing:.5px}
+.col h2 .n{background:#a78bfa;color:#1a0b2e;border-radius:20px;padding:1px 11px;font-size:15px}
+.col.done{background:#0f3a2c}.col.done h2 .n{background:#34d399}
+.cards{padding:10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:9px}
+.cards::-webkit-scrollbar{width:5px}.cards::-webkit-scrollbar-thumb{background:#ffffff33;border-radius:5px}
+.pk{background:#fff;color:var(--tx);border-radius:12px;padding:10px 12px;border-left:6px solid #8b5cf6;font-size:12.5px;line-height:1.35}
+.pk .l{font-size:19px;font-weight:800;color:var(--pd);display:flex;justify-content:space-between;align-items:center}
+.pk .l small{font-size:11px;color:var(--mut);font-weight:500}
+.pk .rf{font-weight:600}
+.pk .ps{margin-top:4px;background:var(--pl);border-radius:6px;padding:3px 7px;font-weight:600;color:var(--p)}
+.pk .to{color:var(--mut);margin-top:3px}
+.pk.bad{border-left-color:var(--bad);background:#fff1f2}
+.pk.new{animation:nw 2.2s ease 3}
+@keyframes nw{0%,100%{box-shadow:0 0 0 0 #a78bfa00}50%{box-shadow:0 0 0 6px #a78bfa}}
+.empty{color:#ffffff55;text-align:center;font-size:13px;margin-top:20px}
+
+@media(max-width:700px){.wrap{padding:14px}.top h1{font-size:16px}.board{grid-template-columns:repeat(2,1fr);height:auto}.bars .b{grid-template-columns:80px 1fr 90px}}
+@media print{body *{visibility:hidden}#etq-print,#etq-print *{visibility:visible}#etq-print{position:fixed;left:0;top:0}}
+</style>
+</head>
+<body>
+
+<div class="top" id="topbar">
+  <div><h1>💜 Órdenes de Producción</h1><small id="sub">Trazabilidad de lotes · Planta</small></div>
+  <div class="sp"></div>
+  <button class="btn-ghost" id="btnSalir" style="display:none" onclick="salir()">⟵ Inicio</button>
+</div>
+
+<!-- ================= HOME ================= -->
+<div class="view on" id="v-home"><div class="wrap">
+  <div class="info" id="banner-lote" style="text-align:center;margin-bottom:14px"></div>
+  <div class="hero"><h2>¿En qué área estás?</h2><p>Toca tu botón e ingresa la clave</p></div>
+  <div class="grid" id="tiles"></div>
+</div></div>
+
+<!-- ================= CORTE ================= -->
+<div class="view" id="v-corte"><div class="wrap">
+  <div class="st-head"><span class="ic">✂️</span><div><div class="num">PASO 1</div><h2>Corte · Registro de lote</h2></div></div>
+  <div class="card">
+    <h3>Número de lote</h3>
+    <div class="lote-bar">
+      <input id="c-lote" placeholder="Escanea o escribe el lote" autocomplete="off">
+      <button class="btn scan" onclick="escanear(function(t){val('c-lote',t)})">📷 Escanear</button>
+    </div>
+    <div class="hint">Funciona con la cámara del celular o tablet, o con lector de código de barras (pistola).</div>
+  </div>
+  <div class="card">
+    <h3>Datos del lote</h3>
+    <div class="row">
+      <div><label>Encargado de corte <i>*</i></label><select id="c-operario"></select></div>
+      <div><label>Fecha ingresada <i>*</i></label><input type="date" id="c-fecha"></div>
+      <div><label>Cliente <i>*</i></label><input id="c-cliente" list="dl-clientes" placeholder="Ej: FAJATEX"></div>
+    </div><br>
+    <div class="row">
+      <div><label>Número de trazo <i>*</i></label><input id="c-trazo" placeholder="Ej: 125"></div>
+      <div><label>Referencia <i>*</i></label><input id="c-ref" placeholder="Ej: 450EUC"></div>
+      <div><label>Color <i>*</i></label><select id="c-color"></select></div>
+      <div><label>Talla <i>*</i></label><select id="c-talla"></select></div>
+      <div><label>Cantidad <i>*</i></label><input type="number" id="c-cant" min="1" inputmode="numeric" placeholder="0"></div>
+    </div><br>
+    <div class="row">
+      <div><label>Entrega a</label><select id="c-epaso" disabled></select></div>
+      <div><label>Recibe</label><select id="c-ea" disabled></select></div>
+    </div>
+    <button class="btn big" onclick="guardarCorte()">💾 Registrar lote</button>
+  </div>
+</div></div>
+
+<!-- ================= ESTANTERÍA ================= -->
+<div class="view" id="v-estanteria"><div class="wrap">
+  <div class="st-head"><span class="ic">🗄️</span><div><div class="num">PASO 2</div><h2>Estantería</h2></div></div>
+  <div class="card">
+    <h3>1 · Escanea el paquete</h3>
+    <div class="lote-bar">
+      <input id="s-lote" placeholder="Número de lote" autocomplete="off">
+      <button class="btn scan" onclick="escanear(function(t){val('s-lote',t);cargarLoteEst()})">📷 Escanear</button>
+      <button class="btn sec" onclick="cargarLoteEst()">Buscar</button>
+    </div>
+    <div class="info" id="s-info"></div>
+  </div>
+  <div class="card" id="s-form" style="opacity:.45;pointer-events:none">
+    <h3>2 · Pasa a Ensamble</h3>
+    <div class="row">
+      <div><label>Encargada <i>*</i></label><select id="s-operario"></select></div>
+      <div><label>Fecha en que pasa a Ensamble <i>*</i></label><input type="date" id="s-fecha"></div>
+    </div>
+    <button class="btn big" onclick="guardarEstanteria()">💾 Guardar</button>
+  </div>
+</div></div>
+
+<!-- ================= ESTACIÓN GENÉRICA ================= -->
+<div class="view" id="v-est"><div class="wrap">
+  <div class="st-head"><span class="ic" id="e-ic"></span><div><div class="num" id="e-num"></div><h2 id="e-tit"></h2></div></div>
+  <div class="card">
+    <h3>1 · Escanea el paquete</h3>
+    <div class="lote-bar">
+      <input id="e-lote" placeholder="Número de lote" autocomplete="off">
+      <button class="btn scan" onclick="escanear(function(t){val('e-lote',t);cargarLote()})">📷 Escanear</button>
+      <button class="btn sec" onclick="cargarLote()">Buscar</button>
+    </div>
+    <div class="info" id="e-info"></div>
+  </div>
+  <div class="card" id="e-form" style="opacity:.45;pointer-events:none">
+    <h3>2 · Registra el paso</h3>
+    <div class="row">
+      <div><label>Tu nombre <i>*</i></label><select id="e-operario"></select></div>
+      <div><label>Paso que realizas <i>*</i></label><select id="e-paso"></select></div>
+    </div><br>
+    <div class="row">
+      <div><label>¿De qué paso viene? <i>*</i></label><select id="e-vpaso"></select></div>
+      <div><label>¿De quién lo recibes? <i>*</i></label><select id="e-rde"></select></div>
+    </div><br>
+    <div class="row">
+      <div><label>Unidades que entraron <i>*</i></label><input type="number" id="e-rec" min="0" inputmode="numeric"></div>
+      <div><label>Unidades que entregas <i>*</i></label><input type="number" id="e-ent" min="0" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="e-dif"></div><br>
+    <div class="row">
+      <div><label>¿A qué paso lo entregas? <i>*</i></label><select id="e-epaso"></select></div>
+      <div><label>¿A quién lo entregas? <i>*</i></label><select id="e-ea"></select></div>
+    </div><br>
+    <label>¿El paquete tiene inconsistencias? <i>*</i></label>
+    <div class="toggle"><button class="si" onclick="setInc('SI')">⚠️ SÍ</button><button class="no" onclick="setInc('NO')">✅ NO</button></div>
+    <div id="e-obs-w" style="display:none;margin-top:12px"><label>¿Cuál? (opcional)</label><textarea id="e-obs" rows="2" placeholder="Describe brevemente"></textarea></div>
+    <button class="btn big" onclick="guardarMov()">💾 Guardar registro</button>
+  </div>
+</div></div>
+
+<!-- ================= JEFE ================= -->
+<div class="view" id="v-jefe"><div class="wrap" style="max-width:1400px">
+  <div class="st-head"><span class="ic">👩‍💼</span><div><div class="num">JEFE DE PLANTA</div><h2>Control de producción</h2></div><div class="sp" style="flex:1"></div><span class="hint" id="j-upd"></span></div>
+  <div class="tabs" id="j-tabs">
+    <button class="on" data-t="res">📊 Resumen</button><button data-t="lotes">📦 Lotes</button>
+    <button data-t="movs">🔁 Movimientos</button><button data-t="inc">⚠️ Inconsistencias</button>
+    <button data-t="ops">👥 Por operario</button>
+  </div>
+  <div id="j-body"></div>
+</div></div>
+
+<!-- ================= TABLERO ================= -->
+<div class="view" id="v-tablero">
+  <div class="tv-top">
+    <h1>💜 Órdenes de Producción · En vivo</h1>
+    <div class="live"><span class="dot"></span> Actualizando</div>
+    <div style="flex:1"></div>
+    <div class="clock" id="tv-clock"></div>
+    <button class="btn-ghost" onclick="pantallaCompleta()">⛶</button>
+    <button class="btn-ghost" id="tv-salir" onclick="salir()">✕</button>
+  </div>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- ================= MODALES ================= -->
+<div class="modal" id="m-login"><div class="mbox">
+  <h3 id="ml-t">Ingresa la clave</h3>
+  <input type="password" id="ml-c" placeholder="Clave" autocomplete="off" onkeydown="if(event.key==='Enter')entrar()">
+  <div class="hint" id="ml-e" style="color:var(--bad)"></div>
+  <div style="display:flex;gap:10px;margin-top:14px"><button class="btn sec" style="flex:1" id="ml-cancel" onclick="cerrar('m-login')">Cancelar</button><button class="btn" style="flex:1" onclick="entrar()">Entrar</button></div>
+</div></div>
+
+<div class="modal" id="m-scan"><div class="mbox">
+  <h3>📷 Apunta al código del paquete</h3>
+  <div style="position:relative"><div id="reader"></div><div class="flash" id="flash"></div></div>
+  <div class="hint" id="scan-msg">Acerca el código QR o de barras a la cámara.</div>
+  <label class="btn sec big" style="display:block;text-align:center;cursor:pointer">🖼️ Leer desde foto
+    <input type="file" accept="image/*" capture="environment" id="foto-in" style="display:none" onchange="leerFoto(this)">
+  </label>
+  <div id="reader-file" style="display:none"></div>
+  <button class="btn sec big" onclick="pararScanner()">Cancelar</button>
+</div></div>
+
+<div class="modal" id="m-etq"><div class="mbox">
+  <h3>✅ Lote registrado</h3>
+  <p class="hint">Imprime esta etiqueta y pégala en el paquete para que las demás áreas lo escaneen.</p>
+  <div id="etq-print"><div class="etq"><div class="q" id="etq-qr"></div><div class="d" id="etq-d"></div></div></div>
+  <div style="display:flex;gap:10px"><button class="btn sec" style="flex:1" onclick="cerrar('m-etq')">Cerrar</button><button class="btn" style="flex:1" onclick="imprimirEtq()">🖨️ Imprimir</button></div>
+</div></div>
+
+<div class="modal" id="m-hist"><div class="mbox wide"><div id="mh-body"></div>
+  <div style="display:flex;gap:10px;margin-top:14px"><button class="btn sec" style="flex:1" onclick="cerrar('m-hist')">Cerrar</button><button class="btn" style="flex:1" id="mh-etq">🏷️ Reimprimir etiqueta</button></div>
+</div></div>
+
+<datalist id="dl-clientes"></datalist>
+
+<div class="toast" id="toast"></div>
+<div class="load" id="load"><div class="spin"></div></div>
+
+<script>
+// Enlace de la aplicación de Apps Script (para cuando la página está en GitHub Pages)
+var APPS_URL = 'https://script.google.com/macros/s/AKfycbxV98gTqUhVf-XH56rDxphR_v8jNLgVSZGTBcCvX2Z5rt_0GKMxRmmYogYqfJ_8o-Ml8g/exec';
+// Enlace de la página publicada en GitHub (los QR de las etiquetas abren esta)
+var URL_PAGINA = 'https://doritafajatex-droid.github.io/fajatex/ordenes.html';
+var EN_APPS_SCRIPT = !!(window.google && google.script && google.script.run);
+var VISTA_INICIAL = '<?= vistaInicial ?>';
+var LOTE_INICIAL = '<?= loteInicial ?>';
+if (LOTE_INICIAL.indexOf('<'+'?') === 0 || !EN_APPS_SCRIPT) { try { LOTE_INICIAL = new URLSearchParams(location.search).get('lote') || ''; } catch (e) { LOTE_INICIAL = ''; } }
+if (VISTA_INICIAL.indexOf('<'+'?') === 0 || !EN_APPS_SCRIPT) { try { VISTA_INICIAL = new URLSearchParams(location.search).get('vista') || ''; } catch (e) { VISTA_INICIAL = ''; } }
+var S = {init:null, acceso:null, clave:null, est:null, inc:'', lote:null, jefe:null, jt:'res', ver:null, timer:null};
+
+var AREAS = [
+  {k:'JEFE',t:'Jefe de planta',d:'Reportes, trazabilidad y estado de cada lote',ic:'👩‍💼',cls:'jefe'},
+  {k:'CORTE',t:'Corte',d:'Registrar lotes nuevos',ic:'✂️'},
+  {k:'ESTANTERIA',t:'Estantería',d:'Fecha de paso a ensamble',ic:'🗄️'},
+  {k:'ENSAMBLE',t:'Ensamble',d:'Ensamble, cosecorte, cola, cierres…',ic:'🧵'},
+  {k:'PRESILLA',t:'Presilla',d:'Registrar paso de presilla',ic:'📌'},
+  {k:'FRANJA',t:'Franja',d:'Registrar paso de franja',ic:'〰️'},
+  {k:'CALIDAD',t:'Calidad',d:'Revisión de calidad',ic:'🔍'},
+  {k:'EMPAQUE',t:'Empaque',d:'Empaque y entrega a logística',ic:'📦'},
+  {k:'TABLERO',t:'Front office',d:'Pantalla en vivo para toda la planta',ic:'📺',cls:'tv'}
+];
+var ICON = {}; AREAS.forEach(function(a){ICON[a.k]=a.ic});
+
+/* ---------- utilidades ---------- */
+function $(id){return document.getElementById(id)}
+function val(id,v){if(v===undefined)return $(id).value.trim();$(id).value=v}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function N(s){return String(s||'').trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function toast(m,t){var e=$('toast');e.textContent=m;e.className='toast on '+(t||'');clearTimeout(e._t);e._t=setTimeout(function(){e.className='toast'},3200)}
+function loading(on){$('load').classList.toggle('on',!!on)}
+function abrir(id){$(id).classList.add('on')}
+function cerrar(id){$(id).classList.remove('on')}
+function show(v){document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on')});$('v-'+v).classList.add('on');
+  $('topbar').style.display = v==='tablero'?'none':'flex'; $('btnSalir').style.display = v==='home'?'none':'inline-block'; window.scrollTo(0,0)}
+// Enlaces ocultos:  .../exec?vista=jefe  (back office con clave)   .../exec?vista=tablero  (front office para TV)
+function api(fn){var args=[].slice.call(arguments,1);
+  if(EN_APPS_SCRIPT)return new Promise(function(ok,ko){
+    var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ko(e)});r[fn].apply(r,args)});
+  return jsonp({accion:'api',fn:fn,args:JSON.stringify(args)}).then(function(r){if(!r.ok)throw new Error(r.error);return r.data})}
+/* Conexión con Apps Script cuando la página está publicada en GitHub Pages */
+function jsonp(params){return new Promise(function(ok,ko){
+  var cb='cb'+Date.now()+Math.floor(Math.random()*100000),sc=document.createElement('script');
+  var t=setTimeout(function(){fin();ko(new Error('Sin conexión con el servidor'))},30000);
+  function fin(){clearTimeout(t);try{delete window[cb]}catch(e){window[cb]=undefined}sc.remove()}
+  window[cb]=function(r){fin();ok(r)};
+  sc.src=APPS_URL+'?'+Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k])}).join('&')+'&callback='+cb;
+  sc.onerror=function(){fin();ko(new Error('Sin conexión con el servidor'))};
+  document.body.appendChild(sc)})}
+function err(e){loading(false);toast((e&&e.message||e||'Error').toString().replace(/^Error:\s*/,''),'err')}
+function opts(sel,arr,ph){$(sel).innerHTML=(ph!==false?'<option value="">'+(ph||'Selecciona…')+'</option>':'')+arr.map(function(x){return '<option>'+esc(x)+'</option>'}).join('')}
+function hoyStr(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function hace(iso){if(!iso)return'';var m=Math.round((Date.now()-new Date(iso))/60000);if(m<1)return'ahora';if(m<60)return'hace '+m+' min';var h=Math.floor(m/60);if(h<24)return'hace '+h+' h';return'hace '+Math.floor(h/24)+' d'}
+
+/* ---------- datos maestros ---------- */
+function estacionDePaso(p){var x=(S.init.pasos||[]).filter(function(z){return N(z.paso)===N(p)})[0];return x?x.estacion:''}
+function personasDe(est){
+  if(est==='LOGISTICA')return ['LOGÍSTICA'];
+  return S.init.personal.filter(function(p){return p.estaciones.indexOf(est)>-1}).map(function(p){return p.nombre})}
+function pasosDe(est){return S.init.pasos.filter(function(p){return p.estacion===est}).map(function(p){return p.paso})}
+function todosPasos(){return S.init.pasos.map(function(p){return p.paso})}
+function siguientePaso(p){var a=todosPasos(),i=a.map(N).indexOf(N(p));return i>-1&&i<a.length-1?a[i+1]:''}
+
+/* ---------- inicio ---------- */
+function pintarHome(){
+  $('tiles').innerHTML=AREAS.map(function(a,i){
+    if(a.k==='JEFE'||a.k==='TABLERO')return ''; // ocultos: solo por enlace
+    return '<button class="tile '+(a.cls||'')+'" onclick="pedirClave(\''+a.k+'\')"><div class="ic">'+a.ic+'</div>'+
+    (a.k!=='JEFE'&&a.k!=='TABLERO'?'<div class="num">PASO '+i+'</div>':'')+'<b>'+a.t+'</b><span>'+a.d+'</span></button>'}).join('')}
+function pedirClave(k){S._pend=k;var a=AREAS.filter(function(x){return x.k===k})[0];$('ml-t').textContent=a.ic+' '+a.t+' · Clave';val('ml-c','');$('ml-e').textContent='';abrir('m-login');setTimeout(function(){$('ml-c').focus()},100)}
+function entrar(){var k=S._pend,c=val('ml-c');if(!c)return;loading(true);
+  api('login',k,c).then(function(){loading(false);cerrar('m-login');S.acceso=k;S.clave=c;
+    if(k!=='JEFE'&&k!=='TABLERO'){try{localStorage.setItem('area_equipo',k);localStorage.setItem('clave_equipo',c)}catch(e){}}
+    abrirArea(k)})
+  .catch(function(e){loading(false);$('ml-e').textContent='Clave incorrecta'})}
+function salir(){pararTimer();S.acceso=null;S.clave=null;
+  if(VISTA_INICIAL==='jefe'){show('home');$('v-home').classList.remove('on');pedirClave('JEFE');return}
+  show('home');$('sub').textContent='Trazabilidad de lotes · Planta';
+  if(document.fullscreenElement)document.exitFullscreen()}
+/* Se abrió la página desde el QR de un paquete */
+function abrirConLote(lote){
+  S.pendLote=lote;
+  $('banner-lote').className='info on';
+  $('banner-lote').innerHTML='<div class="t">📦 Lote '+esc(lote)+' escaneado</div><div class="hint">Elige tu área para registrarlo</div>';
+  var a='',c='';try{a=localStorage.getItem('area_equipo')||'';c=localStorage.getItem('clave_equipo')||''}catch(e){}
+  if(!a||!c)return;
+  loading(true);
+  api('login',a,c).then(function(){loading(false);S.acceso=a;S.clave=c;abrirArea(a)})
+  .catch(function(){loading(false)});
+}
+function pararTimer(){if(S.timer){clearInterval(S.timer);S.timer=null}if(S.rt){clearInterval(S.rt);S.rt=null}}
+
+function abrirArea(k){
+  pararTimer();
+  var a=AREAS.filter(function(x){return x.k===k})[0];$('sub').textContent=a.t;
+  if(k==='CORTE')abrirCorte();
+  else if(k==='ESTANTERIA')abrirEstanteria();
+  else if(k==='JEFE')abrirJefe();
+  else if(k==='TABLERO')abrirTablero();
+  else abrirEstacion(k);
+}
+
+/* ---------- CORTE ---------- */
+function abrirCorte(){
+  opts('c-operario',personasDe('CORTE'),'Selecciona…');
+  opts('c-color',S.init.colores||['NEGRO','BEIGE','COCOA']);
+  opts('c-talla',S.init.tallas||['XS','S','M','L','XL','2XL','3XL']);
+  try{var mem=localStorage.getItem('op_CORTE');if(mem)val('c-operario',mem)}catch(e){}
+  val('c-fecha',hoyStr());
+  // Corte solo entrega a Estantería (Marly Zuluaga)
+  var est=todosPasos().filter(function(p){return N(p)==='ESTANTERIA'})[0]||'Estantería';
+  opts('c-epaso',[est],false);
+  var rec=personasDe('ESTANTERIA');if(!rec.length)rec=[S.init.jefePlanta||'ZULUAGA VANEGAS MARLY'];
+  opts('c-ea',rec,false);
+  show('corte');setTimeout(function(){$('c-lote').focus()},150);
+  if(S.pendLote){val('c-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info'}
+}
+function guardarCorte(){
+  var d={operario:val('c-operario'),lote:val('c-lote'),trazo:val('c-trazo'),referencia:val('c-ref'),color:val('c-color'),talla:val('c-talla'),
+    cantidad:val('c-cant'),fecha:val('c-fecha'),cliente:val('c-cliente'),entregaPaso:val('c-epaso'),entregaA:val('c-ea')};
+  var ids={operario:'c-operario',lote:'c-lote',trazo:'c-trazo',referencia:'c-ref',color:'c-color',talla:'c-talla',cantidad:'c-cant',fecha:'c-fecha',cliente:'c-cliente'};
+  var falta=Object.keys(ids).filter(function(k){var bad=!d[k];$(ids[k]).classList.toggle('bad-f',bad);return bad});
+  if(falta.length)return toast('Completa todos los campos obligatorios','err');
+  if(!(Number(d.cantidad)>0))return toast('La cantidad debe ser mayor que 0','err');
+  try{localStorage.setItem('op_CORTE',d.operario)}catch(e){}
+  loading(true);
+  api('registrarCorte',S.clave,d).then(function(r){loading(false);toast('Lote '+r.lote+' registrado ✔','ok');
+    mostrarEtiqueta({LOTE:r.lote,TRAZO:d.trazo.toUpperCase(),REFERENCIA:d.referencia.toUpperCase(),COLOR:d.color.toUpperCase(),TALLA:d.talla.toUpperCase(),CANTIDAD:d.cantidad,CLIENTE:d.cliente.toUpperCase(),'FECHA INGRESO A PLANTA':d.fecha});
+    ['c-lote','c-trazo','c-ref','c-cant'].forEach(function(i){val(i,'')});
+  }).catch(err);
+}
+
+/* ---------- ETIQUETA QR ---------- */
+/* El QR de la etiqueta es un enlace: la cámara normal del celular lo abre con el lote cargado */
+function urlBase(){return URL_PAGINA||(EN_APPS_SCRIPT?APPS_URL:(location.origin+location.pathname))}
+function urlLote(l){return urlBase()+'?lote='+encodeURIComponent(l)}
+function codigoDe(t){t=String(t||'').trim();var m=/[?&]lote=([^&#]+)/.exec(t);return m?decodeURIComponent(m[1]).trim():t}
+function mostrarEtiqueta(l){
+  $('etq-qr').innerHTML='';
+  new QRCode($('etq-qr'),{text:urlLote(l.LOTE),width:120,height:120,correctLevel:QRCode.CorrectLevel.L});
+  $('etq-d').innerHTML='<b>LOTE '+esc(l.LOTE)+'</b>'+(l.TRAZO?'Trazo '+esc(l.TRAZO)+'<br>':'')+esc(l.REFERENCIA)+' · '+esc(l.COLOR)+' · T. '+esc(l.TALLA)+'<br>'+esc(l.CANTIDAD)+' unds · '+esc(l.CLIENTE)+'<br>Ingreso: '+esc(l['FECHA INGRESO A PLANTA']);
+  abrir('m-etq');
+}
+function imprimirEtq(){
+  var img=$('etq-qr').querySelector('img'),cv=$('etq-qr').querySelector('canvas');
+  var src=(cv&&cv.toDataURL())||(img&&img.src)||'';
+  var w=window.open('','_blank','width=420,height=320');
+  if(!w){window.print();return}
+  w.document.write('<html><head><title>Etiqueta</title><style>body{font-family:Arial;margin:8px}.e{border:2px solid #000;border-radius:8px;padding:10px;display:flex;gap:12px;align-items:center;width:360px}b{font-size:24px;display:block}</style></head><body><div class="e"><img src="'+src+'" width="120"><div>'+$('etq-d').innerHTML+'</div></div><script>setTimeout(function(){print()},300)<\/script></body></html>');
+  w.document.close();
+}
+
+/* ---------- ESCÁNER (cámara) ---------- */
+var QR=null;
+/* Escáner: cámara en vivo (funciona desde el enlace de GitHub), con pitido, destello verde y vibración */
+var SCAN_CB=null;
+function pitido(){try{var A=window.AudioContext||window.webkitAudioContext;S.ac=S.ac||new A();var o=S.ac.createOscillator(),g=S.ac.createGain();
+  o.type='square';o.frequency.value=1400;g.gain.value=.08;o.connect(g);g.connect(S.ac.destination);o.start();o.stop(S.ac.currentTime+.12)}catch(e){}}
+function exitoScan(txt){
+  try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}
+  pitido();var f=$('flash');f.classList.add('on');setTimeout(function(){f.classList.remove('on')},60);
+  var cb=SCAN_CB;setTimeout(function(){pararScanner();cb&&cb(codigoDe(txt))},350);
+}
+function escanear(cb){
+  if(typeof Html5Qrcode==='undefined')return toast('No cargó el escáner. Escribe el lote o usa la pistola lectora.','err');
+  SCAN_CB=cb;abrir('m-scan');$('scan-msg').textContent='Acerca el código QR o de barras a la cámara.';
+  try{var A=window.AudioContext||window.webkitAudioContext;S.ac=S.ac||new A();S.ac.resume&&S.ac.resume()}catch(e){}
+  QR=new Html5Qrcode('reader');var leido=false;
+  QR.start({facingMode:'environment'},{fps:15,qrbox:function(w,h){var s=Math.floor(Math.min(w,h)*0.8);return{width:s,height:Math.floor(s*0.7)}}},
+    function(txt){if(leido)return;leido=true;exitoScan(txt)},function(){})
+  .catch(function(e){$('scan-msg').innerHTML='<span class="warn">'+(EN_APPS_SCRIPT?'Aquí Google bloquea la cámara en vivo. Usa el enlace de GitHub, o toca "Leer desde foto".':'No se pudo abrir la cámara. Da permiso de cámara al navegador, o toca "Leer desde foto".')+'</span>'});
+}
+function leerFoto(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  var lector=new Html5Qrcode('reader-file');
+  lector.scanFile(f,false).then(function(txt){inp.value='';exitoScan(txt)})
+  .catch(function(){inp.value='';$('scan-msg').innerHTML='<span class="warn">No se encontró un código en la foto. Intenta más cerca y con buena luz.</span>'});
+}
+function pararScanner(){SCAN_CB=null;if(QR){var q=QR;QR=null;q.stop().then(function(){q.clear()}).catch(function(){})}cerrar('m-scan')}
+
+/* ---------- ESTANTERÍA ---------- */
+function abrirEstanteria(){
+  var ps=personasDe('ESTANTERIA');if(!ps.length)ps=[S.init.jefePlanta||'ZULUAGA VANEGAS MARLY'];
+  opts('s-operario',ps,false);
+  limpiarEstanteria();show('estanteria');setTimeout(function(){$('s-lote').focus()},150);
+  if(S.pendLote){val('s-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info';cargarLoteEst()}
+}
+function limpiarEstanteria(){val('s-lote','');val('s-fecha',hoyStr());$('s-info').className='info';$('s-form').style.opacity=.45;$('s-form').style.pointerEvents='none'}
+function cargarLoteEst(){
+  var l=codigoDe(val('s-lote'));val('s-lote',l);if(!l)return toast('Escanea o escribe el lote','err');
+  loading(true);
+  api('getLote',l).then(function(r){loading(false);
+    $('s-info').className='info on';
+    if(!r.existe){$('s-info').innerHTML='<span class="warn">El lote '+esc(l)+' no existe. Debe registrarse primero en CORTE.</span>';return}
+    var x=r.lote,u=r.ultimo;
+    $('s-info').innerHTML='<div class="t">Lote '+esc(x.LOTE)+(x.TRAZO?' · Trazo '+esc(x.TRAZO):'')+'</div><div class="chips">'+
+      ['REFERENCIA','COLOR','TALLA','CLIENTE'].map(function(k){return '<span class="chip">'+esc(x[k])+'</span>'}).join('')+
+      '<span class="chip">'+esc(u?u['UNDS ENTREGADAS']:x.CANTIDAD)+' unds</span>'+
+      (u?'<span class="chip">Viene de: '+esc(u.PASO)+' · '+esc(u.OPERARIO)+'</span>':'')+
+      (x['FECHA PASO A ENSAMBLE']?'<span class="chip g">Ya programado: '+esc(x['FECHA PASO A ENSAMBLE'])+'</span>':'')+'</div>';
+    $('s-form').style.opacity=1;$('s-form').style.pointerEvents='auto';
+  }).catch(err);
+}
+function guardarEstanteria(){
+  var d={lote:val('s-lote'),operario:val('s-operario'),fecha:val('s-fecha')};
+  if(!d.lote)return toast('Escanea el lote','err');
+  if(!d.fecha){$('s-fecha').classList.add('bad-f');return toast('Pon la fecha en que pasa a Ensamble','err')}
+  try{localStorage.setItem('op_ESTANTERIA',d.operario)}catch(e){}
+  loading(true);
+  api('registrarEstanteria',S.clave,d).then(function(r){loading(false);toast('Lote '+r.lote+' pasa a Ensamble el '+r.fecha+' ✔','ok');limpiarEstanteria();$('s-lote').focus()}).catch(err);
+}
+
+/* ---------- ESTACIONES (Ensamble → Empaque) ---------- */
+function abrirEstacion(k){
+  S.est=k;S.lote=null;
+  var i=AREAS.map(function(a){return a.k}).indexOf(k);
+  $('e-ic').textContent=ICON[k];$('e-num').textContent='PASO '+i;$('e-tit').textContent=AREAS[i].t;
+  opts('e-operario',personasDe(k));
+  var ps=pasosDe(k);opts('e-paso',ps,ps.length>1?'Selecciona…':false);
+  opts('e-vpaso',todosPasos().filter(function(p){return N(p)!=='LOGISTICA'}));
+  opts('e-epaso',todosPasos().filter(function(p){return N(p)!=='CORTE'}));
+  $('e-vpaso').onchange=function(){opts('e-rde',personasDe(estacionDePaso(val('e-vpaso'))))};
+  $('e-epaso').onchange=function(){var l=personasDe(estacionDePaso(val('e-epaso')));opts('e-ea',l,l.length>1?'Selecciona…':false)};
+  $('e-paso').onchange=function(){var s=siguientePaso(val('e-paso'));if(s){val('e-epaso',s);$('e-epaso').onchange()}};
+  opts('e-rde',[]);opts('e-ea',[]);
+  ['e-rec','e-ent'].forEach(function(id){$(id).oninput=difUnds});
+  try{var mem=localStorage.getItem('op_'+k);if(mem)val('e-operario',mem)}catch(e){}
+  limpiarEst();show('est');setTimeout(function(){$('e-lote').focus()},150);
+  if(S.pendLote){val('e-lote',S.pendLote);S.pendLote='';$('banner-lote').className='info';cargarLote()}
+}
+function limpiarEst(){
+  val('e-lote','');$('e-info').className='info';$('e-form').style.opacity=.45;$('e-form').style.pointerEvents='none';
+  ['e-rec','e-ent','e-obs'].forEach(function(i){val(i,'')});setInc('');$('e-dif').textContent='';
+  var ps=pasosDe(S.est);if(ps.length===1)val('e-paso',ps[0]);
+}
+function setInc(v){S.inc=v;document.querySelector('.toggle .si').classList.toggle('on',v==='SI');document.querySelector('.toggle .no').classList.toggle('on',v==='NO');$('e-obs-w').style.display=v==='SI'?'block':'none'}
+function difUnds(){var r=Number(val('e-rec')),e=Number(val('e-ent'));if(val('e-rec')===''||val('e-ent')===''){$('e-dif').textContent='';return}
+  var d=r-e;$('e-dif').innerHTML=d===0?'<span style="color:var(--ok)">✔ Unidades completas</span>':'<span class="warn">⚠ Diferencia de '+d+' unidades</span>'}
+function cargarLote(){
+  var l=codigoDe(val('e-lote'));val('e-lote',l);if(!l)return toast('Escanea o escribe el lote','err');
+  loading(true);
+  api('getLote',l).then(function(r){loading(false);
+    if(!r.existe){$('e-info').className='info on';$('e-info').innerHTML='<span class="warn">El lote '+esc(l)+' no existe. Debe registrarse primero en CORTE.</span>';return}
+    S.lote=r;var x=r.lote,u=r.ultimo;
+    $('e-info').className='info on';
+    $('e-info').innerHTML='<div class="t">Lote '+esc(x.LOTE)+(x.TRAZO?' · Trazo '+esc(x.TRAZO):'')+'</div><div class="chips">'+
+      ['REFERENCIA','COLOR','TALLA','CLIENTE'].map(function(k){return '<span class="chip">'+esc(x[k])+'</span>'}).join('')+
+      '<span class="chip">'+esc(x.CANTIDAD)+' unds</span>'+
+      (u?'<span class="chip">Último: '+esc(u.PASO)+' · '+esc(u.OPERARIO)+'</span>':'')+
+      (x.INCONSISTENCIA==='SI'?'<span class="chip r">Con inconsistencia</span>':'')+
+      (x.ESTADO==='ENTREGADO'?'<span class="chip g">Ya entregado a logística</span>':'')+'</div>';
+    $('e-form').style.opacity=1;$('e-form').style.pointerEvents='auto';
+    if(u){
+      // Si el paso anterior entregó a un punto sin tablet (ej. Estantería), viene de ahí y de quien lo recibió;
+      // si no, viene del paso anterior y de quien lo hizo.
+      var ep=u['ENTREGA A PASO']||'',estEp=estacionDePaso(ep);
+      var intermedio=ep&&N(ep)!=='LOGISTICA'&&estEp&&S.init.estaciones.indexOf(estEp)<0;
+      var vp=intermedio?ep:u.PASO, de=intermedio?(u['ENTREGA A']||''):u.OPERARIO;
+      val('e-vpaso',vp);$('e-vpaso').onchange();
+      if(de&&[].slice.call($('e-rde').options).every(function(o){return o.value!==de})){$('e-rde').insertAdjacentHTML('beforeend','<option>'+esc(de)+'</option>')}
+      val('e-rde',de);
+      val('e-rec',u['UNDS ENTREGADAS']);
+      if(pasosDe(S.est).map(N).indexOf(N(u['ENTREGA A PASO']))>-1)val('e-paso',u['ENTREGA A PASO']);
+      if(!val('e-ent'))val('e-ent',u['UNDS ENTREGADAS']);
+    }
+    if(!val('e-paso'))val('e-paso',pasosDe(S.est)[0]);
+    var sig=siguientePaso(val('e-paso'));if(sig){val('e-epaso',sig)}$('e-epaso').onchange();
+    if(S.est==='EMPAQUE'){val('e-epaso','Logística');$('e-epaso').onchange()}
+    difUnds();
+  }).catch(err);
+}
+function guardarMov(){
+  var d={lote:val('e-lote'),operario:val('e-operario'),paso:val('e-paso'),vienePaso:val('e-vpaso'),recibeDe:val('e-rde'),
+    recibidas:val('e-rec'),entregadas:val('e-ent'),entregaPaso:val('e-epaso'),entregaA:val('e-ea'),inconsistencia:S.inc,observacion:val('e-obs')};
+  var ids={operario:'e-operario',paso:'e-paso',vienePaso:'e-vpaso',recibeDe:'e-rde',recibidas:'e-rec',entregadas:'e-ent',entregaPaso:'e-epaso',entregaA:'e-ea'};
+  var falta=Object.keys(ids).filter(function(k){var bad=d[k]==='';$(ids[k]).classList.toggle('bad-f',bad);return bad});
+  if(falta.length)return toast('Completa todos los campos obligatorios','err');
+  if(!d.inconsistencia)return toast('Indica si el paquete tiene inconsistencias','err');
+  try{localStorage.setItem('op_'+S.est,d.operario)}catch(e){}
+  loading(true);
+  api('registrarMovimiento',S.est,S.clave,d).then(function(r){loading(false);toast('Lote '+r.lote+' registrado ✔','ok');limpiarEst();$('e-lote').focus()}).catch(err);
+}
+
+/* ---------- JEFE ---------- */
+function abrirJefe(){
+  show('jefe');
+  document.querySelectorAll('#j-tabs button').forEach(function(b){b.onclick=function(){S.jt=b.dataset.t;
+    document.querySelectorAll('#j-tabs button').forEach(function(x){x.classList.toggle('on',x===b)});pintarJefe()}});
+  cargarJefe(true);
+  S.timer=setInterval(function(){api('getVersion').then(function(v){if(v!==S.ver)cargarJefe(false)})},10000);
+}
+function cargarJefe(l){if(l)loading(true);api('getJefe',S.clave).then(function(r){loading(false);S.jefe=r;S.ver=r.version;
+  $('j-upd').textContent='Actualizado '+new Date().toLocaleTimeString();pintarJefe()}).catch(err)}
+function pintarJefe(){
+  var J=S.jefe;if(!J)return;var b=$('j-body');
+  var activos=J.lotes.filter(function(l){return l['ESTACION ACTUAL']&&l.ESTADO!=='ENTREGADO'});
+  var hoy=hoyStr(),mes=hoy.slice(0,7);
+  if(S.jt==='res'){
+    var ent=J.lotes.filter(function(l){return l.ESTADO==='ENTREGADO'});
+    var undsP=activos.reduce(function(s,l){return s+Number(l['ULTIMAS UNDS ENTREGADAS']||l.CANTIDAD||0)},0);
+    var por={};S.init.estaciones.forEach(function(e){por[e]={n:0,u:0}});
+    activos.forEach(function(l){var e=l['ESTACION ACTUAL'];if(por[e]){por[e].n++;por[e].u+=Number(l['ULTIMAS UNDS ENTREGADAS']||0)}});
+    var mx=Math.max.apply(null,Object.keys(por).map(function(k){return por[k].n}).concat([1]));
+    b.innerHTML='<div class="kpis">'+
+      kpi(activos.length,'Lotes en proceso')+kpi(undsP,'Unidades en proceso')+
+      kpi(activos.filter(function(l){return l.INCONSISTENCIA==='SI'}).length,'Lotes con inconsistencia','r')+
+      kpi(ent.filter(function(l){return String(l['FECHA ENTREGA A LOGISTICA']).slice(0,10)===hoy}).length,'Entregados hoy','g')+
+      kpi(ent.filter(function(l){return String(l['FECHA ENTREGA A LOGISTICA']).slice(0,7)===mes}).length,'Entregados este mes','g')+
+      '</div><div class="card"><h3>¿Dónde están los lotes?</h3><div class="bars">'+
+      Object.keys(por).map(function(k){return '<div class="b"><b>'+ICON[k]+' '+k+'</b><div class="track"><div class="fill" style="width:'+(por[k].n/mx*100)+'%"></div></div><span>'+por[k].n+' lotes · '+por[k].u+' u</span></div>'}).join('')+
+      '</div></div><div class="card"><h3>Últimos movimientos</h3>'+tablaMovs(J.movimientos.slice(0,12))+'</div>';
+  }
+  if(S.jt==='lotes'){
+    b.innerHTML='<div class="filters"><input id="jf-q" placeholder="🔎 Buscar lote, referencia, cliente, operario…"><select id="jf-e"><option value="">Todos los estados</option><option value="PROC">En proceso</option><option>ENTREGADO</option><option value="INC">Con inconsistencia</option></select><select id="jf-s"><option value="">Todas las estaciones</option>'+S.init.estaciones.map(function(e){return '<option>'+e+'</option>'}).join('')+'</select><button class="btn sec" onclick="exportar(\'lotes\')">⬇ CSV</button></div><div class="tbl-wrap" id="jt"></div>';
+    var f=function(){var q=N(val('jf-q')),e=val('jf-e'),s=val('jf-s');
+      S._rows=J.lotes.filter(function(l){
+        if(q&&N(Object.keys(l).map(function(k){return l[k]}).join(' ')).indexOf(q)<0)return false;
+        if(e==='PROC'&&!(l['ESTACION ACTUAL']&&l.ESTADO!=='ENTREGADO'))return false;
+        if(e==='ENTREGADO'&&l.ESTADO!=='ENTREGADO')return false;
+        if(e==='INC'&&l.INCONSISTENCIA!=='SI')return false;
+        if(s&&l['ESTACION ACTUAL']!==s)return false;return true}).slice(0,800);
+      $('jt').innerHTML='<table><thead><tr><th>Trazo</th><th>Lote</th><th>Referencia</th><th>Color</th><th>Talla</th><th>Cliente</th><th>Cant.</th><th>Pasa a ensamble</th><th>Estado</th><th>Estación · Paso</th><th>Responsable</th><th>Entrega a</th><th>Recib./Entreg.</th><th>Incons.</th><th>Actualizado</th></tr></thead><tbody>'+
+      S._rows.map(function(l){return '<tr onclick="verLote(\''+esc(l.LOTE)+'\')"><td>'+esc(l.TRAZO)+'</td><td><b>'+esc(l.LOTE)+'</b></td><td>'+esc(l.REFERENCIA)+'</td><td>'+esc(l.COLOR)+'</td><td>'+esc(l.TALLA)+'</td><td>'+esc(l.CLIENTE)+'</td><td>'+esc(l.CANTIDAD)+'</td><td>'+esc(l['FECHA PASO A ENSAMBLE'])+'</td><td>'+tagEstado(l.ESTADO)+'</td><td>'+esc(l['ESTACION ACTUAL'])+(l['PASO ACTUAL']?' · '+esc(l['PASO ACTUAL']):'')+'</td><td>'+esc(l.RESPONSABLE)+'</td><td>'+esc(l['ENTREGA A PASO'])+(l['ENTREGA A']?' · '+esc(l['ENTREGA A']):'')+'</td><td>'+esc(l['ULTIMAS UNDS RECIBIDAS'])+' / '+esc(l['ULTIMAS UNDS ENTREGADAS'])+'</td><td>'+(l.INCONSISTENCIA==='SI'?'<span class="tag r">SÍ</span>':l.INCONSISTENCIA==='NO'?'<span class="tag g">NO</span>':'')+'</td><td>'+esc(l['ULTIMA ACTUALIZACION'])+'</td></tr>'}).join('')+'</tbody></table>'};
+    ['jf-q','jf-e','jf-s'].forEach(function(i){$(i).oninput=f;$(i).onchange=f});f();
+  }
+  if(S.jt==='movs'||S.jt==='inc'){
+    b.innerHTML='<div class="filters"><input id="jm-q" placeholder="🔎 Buscar trazo, lote u operario…"><select id="jm-s"><option value="">Todas las estaciones</option>'+S.init.estaciones.map(function(e){return '<option>'+e+'</option>'}).join('')+'</select><input type="date" id="jm-d1"><input type="date" id="jm-d2"><button class="btn sec" onclick="exportar(\'movs\')">⬇ CSV</button></div><div class="tbl-wrap" id="jt"></div>';
+    var g=function(){var q=N(val('jm-q')),s=val('jm-s'),d1=val('jm-d1'),d2=val('jm-d2');
+      S._rows=J.movimientos.filter(function(m){
+        if(S.jt==='inc'&&!(m.INCONSISTENCIA==='SI'||Number(m.DIFERENCIA)!==0))return false;
+        if(q&&N(m.LOTE+' '+trazoDe(m.LOTE)+' '+m.OPERARIO+' '+m['RECIBE DE']+' '+m['ENTREGA A']).indexOf(q)<0)return false;
+        if(s&&m.ESTACION!==s)return false;var f=String(m['FECHA HORA']).slice(0,10);
+        if(d1&&f<d1)return false;if(d2&&f>d2)return false;return true});
+      $('jt').innerHTML=tablaMovs(S._rows.slice(0,1000),true)};
+    ['jm-q','jm-s','jm-d1','jm-d2'].forEach(function(i){$(i).oninput=g;$(i).onchange=g});g();
+  }
+  if(S.jt==='ops'){
+    var ag={};J.movimientos.forEach(function(m){var k=m.OPERARIO;if(!k)return;var a=ag[k]=ag[k]||{n:0,r:0,e:0,i:0,est:{}};
+      a.n++;a.r+=Number(m['UNDS RECIBIDAS']||0);a.e+=Number(m['UNDS ENTREGADAS']||0);if(m.INCONSISTENCIA==='SI')a.i++;a.est[m.PASO]=1});
+    var ks=Object.keys(ag).sort(function(x,y){return ag[y].e-ag[x].e});
+    S._rows=ks.map(function(k){return {OPERARIO:k,REGISTROS:ag[k].n,'UNDS RECIBIDAS':ag[k].r,'UNDS ENTREGADAS':ag[k].e,DIFERENCIA:ag[k].r-ag[k].e,INCONSISTENCIAS:ag[k].i,PASOS:Object.keys(ag[k].est).join(', ')}});
+    b.innerHTML='<div class="filters"><span class="hint" style="flex:1">Totales de los últimos 3.000 movimientos</span><button class="btn sec" onclick="exportar(\'ops\')">⬇ CSV</button></div><div class="tbl-wrap"><table><thead><tr><th>Operario</th><th>Registros</th><th>Unds recibidas</th><th>Unds entregadas</th><th>Diferencia</th><th>Inconsistencias</th><th>Pasos</th></tr></thead><tbody>'+
+      S._rows.map(function(r){return '<tr><td><b>'+esc(r.OPERARIO)+'</b></td><td>'+r.REGISTROS+'</td><td>'+r['UNDS RECIBIDAS']+'</td><td>'+r['UNDS ENTREGADAS']+'</td><td>'+(r.DIFERENCIA?'<span class="tag y">'+r.DIFERENCIA+'</span>':'0')+'</td><td>'+(r.INCONSISTENCIAS?'<span class="tag r">'+r.INCONSISTENCIAS+'</span>':'0')+'</td><td>'+esc(r.PASOS)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+}
+function trazoDe(lote){var J=S.jefe;if(!J)return'';if(!J._tz){J._tz={};J.lotes.forEach(function(l){J._tz[String(l.LOTE)]=l.TRAZO})}return J._tz[String(lote)]||''}
+function kpi(v,l,c){return '<div class="kpi '+(c||'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>'}
+function tagEstado(e){return e==='ENTREGADO'?'<span class="tag g">ENTREGADO</span>':/^EN /.test(e||'')?'<span class="tag p">'+esc(e)+'</span>':'<span class="tag y">'+esc(e)+'</span>'}
+function tablaMovs(rows,full){
+  return '<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Trazo</th><th>Lote</th><th>Estación</th><th>Paso</th><th>Operario</th><th>Viene de</th><th>Recibió</th><th>Entregó</th><th>Dif.</th><th>Entrega a</th><th>Incons.</th>'+(full?'<th>Observación</th>':'')+'</tr></thead><tbody>'+
+  rows.map(function(m){var d=Number(m.DIFERENCIA)||0;return '<tr onclick="verLote(\''+esc(m.LOTE)+'\')"><td>'+esc(m['FECHA HORA'])+'</td><td>'+esc(trazoDe(m.LOTE))+'</td><td><b>'+esc(m.LOTE)+'</b></td><td>'+esc(m.ESTACION)+'</td><td>'+esc(m.PASO)+'</td><td>'+esc(m.OPERARIO)+'</td><td>'+esc(m['VIENE DE PASO'])+(m['RECIBE DE']&&m['RECIBE DE']!=='—'?' · '+esc(m['RECIBE DE']):'')+'</td><td>'+esc(m['UNDS RECIBIDAS'])+'</td><td>'+esc(m['UNDS ENTREGADAS'])+'</td><td>'+(d?'<span class="tag y">'+d+'</span>':'0')+'</td><td>'+esc(m['ENTREGA A PASO'])+(m['ENTREGA A']?' · '+esc(m['ENTREGA A']):'')+'</td><td>'+(m.INCONSISTENCIA==='SI'?'<span class="tag r">SÍ</span>':'<span class="tag g">NO</span>')+'</td>'+(full?'<td>'+esc(m.OBSERVACION)+'</td>':'')+'</tr>'}).join('')+
+  (rows.length?'':'<tr><td colspan="13" style="text-align:center;color:#999;padding:20px">Sin registros</td></tr>')+'</tbody></table></div>'}
+function verLote(lote){
+  var J=S.jefe,l=J.lotes.filter(function(x){return String(x.LOTE)===String(lote)})[0];
+  var ms=J.movimientos.filter(function(m){return String(m.LOTE)===String(lote)}).slice().reverse();
+  if(!l)return;
+  $('mh-body').innerHTML='<h3>📦 Lote '+esc(l.LOTE)+(l.TRAZO?' · Trazo '+esc(l.TRAZO):'')+' '+tagEstado(l.ESTADO)+'</h3><div class="chips" style="margin-bottom:16px">'+
+    ['REFERENCIA','COLOR','TALLA','CLIENTE'].map(function(k){return '<span class="chip">'+esc(l[k])+'</span>'}).join('')+'<span class="chip">'+esc(l.CANTIDAD)+' unds</span><span class="chip">Ingreso '+esc(l['FECHA INGRESO A PLANTA'])+'</span>'+
+    (l['UNDS ENTREGADAS A LOGISTICA']!==''?'<span class="chip g">Entregó a logística: '+esc(l['UNDS ENTREGADAS A LOGISTICA'])+' u</span>':'')+
+    (Number(l['DIFERENCIA DE UNDS'])?'<span class="chip r">Diferencia total: '+esc(l['DIFERENCIA DE UNDS'])+'</span>':'')+'</div>'+
+    '<h3>Recorrido</h3><div class="tl">'+(ms.length?ms.map(function(m){return '<div class="e '+(m.INCONSISTENCIA==='SI'?'r':'')+'"><b>'+esc(m.PASO)+'</b> · '+esc(m.OPERARIO)+
+    '<div>'+esc(m['FECHA HORA'])+' · Recibió '+esc(m['UNDS RECIBIDAS'])+' de '+esc(m['VIENE DE PASO'])+(m['RECIBE DE']&&m['RECIBE DE']!=='—'?' ('+esc(m['RECIBE DE'])+')':'')+' · Entregó '+esc(m['UNDS ENTREGADAS'])+' a '+esc(m['ENTREGA A PASO'])+(m['ENTREGA A']?' ('+esc(m['ENTREGA A'])+')':'')+
+    (m.INCONSISTENCIA==='SI'?' · <b style="color:var(--bad)">Inconsistencia</b>'+(m.OBSERVACION?': '+esc(m.OBSERVACION):''):'')+'</div></div>'}).join(''):'<div class="hint">Sin movimientos registrados en la app (lote migrado).</div>')+'</div>';
+  $('mh-etq').onclick=function(){cerrar('m-hist');mostrarEtiqueta(l)};
+  abrir('m-hist');
+}
+function exportar(){
+  var rows=S._rows||[];if(!rows.length)return toast('No hay datos','err');
+  var ks=Object.keys(rows[0]).filter(function(k){return k[0]!=='_'});
+  var csv='﻿'+ks.join(';')+'\n'+rows.map(function(r){return ks.map(function(k){return '"'+String(r[k]==null?'':r[k]).replace(/"/g,'""')+'"'}).join(';')}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='reporte_'+S.jt+'_'+hoyStr()+'.csv';a.click();
+}
+
+/* ---------- TABLERO EN VIVO ---------- */
+function abrirTablero(){
+  show('tablero');S.ver=null;
+  var reloj=function(){$('tv-clock').textContent=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'})};reloj();
+  var tick=0;
+  var poll=function(){reloj();tick++;
+    if(tick%60===0){cargarTablero();return}               // refresco completo cada minuto
+    if(tick%4===0)api('getVersion').then(function(v){if(v!==S.ver)cargarTablero()}).catch(function(){}); // cambios cada 4 s
+  };
+  cargarTablero();
+  S.timer=setInterval(poll,1000);
+}
+var VISTOS={};
+function cargarTablero(){
+  api('getTablero').then(function(r){
+    var first=S.ver===null;S.ver=r.version;
+    var cols=S.init.estaciones.map(function(e){return {k:e,t:e,list:r.cols[e]||[]}});
+    cols.push({k:'DONE',t:'✅ ENTREGADOS HOY',list:r.terminados});
+    $('board').innerHTML=cols.map(function(c){
+      return '<div class="col '+(c.k==='DONE'?'done':'')+'"><h2><span>'+(ICON[c.k]||'')+' '+c.t+'</span><span class="n">'+c.list.length+'</span></h2><div class="cards">'+
+      (c.list.length?c.list.map(function(l){
+        var key=l.LOTE+'|'+l._iso,nuevo=!first&&!VISTOS[key];VISTOS[key]=1;
+        return '<div class="pk '+(l.INCONSISTENCIA==='SI'?'bad ':'')+(nuevo?'new':'')+'"><div class="l">'+esc(l.LOTE)+'<small>'+hace(l._iso)+'</small></div>'+
+        (l.TRAZO?'<div style="color:var(--mut)">Trazo '+esc(l.TRAZO)+'</div>':'')+'<div class="rf">'+esc(l.REFERENCIA)+' · '+esc(l.COLOR)+' · '+esc(l.TALLA)+'</div><div>'+esc(l.CLIENTE)+' · <b>'+esc(l['ULTIMAS UNDS ENTREGADAS']||l.CANTIDAD)+'</b>/'+esc(l.CANTIDAD)+' u</div>'+
+        '<div class="ps">'+esc(l['PASO ACTUAL'])+' · '+esc(String(l.RESPONSABLE||'').split(' ').slice(-2).join(' '))+'</div>'+
+        (l['ENTREGA A PASO']?'<div class="to">→ '+esc(l['ENTREGA A PASO'])+(l['ENTREGA A']?' · '+esc(String(l['ENTREGA A']).split(' ').slice(-2).join(' ')):'')+'</div>':'')+
+        (l.INCONSISTENCIA==='SI'?'<div style="color:var(--bad);font-weight:700;margin-top:3px">⚠ Inconsistencia</div>':'')+'</div>'}).join(''):'<div class="empty">Sin paquetes</div>')+'</div></div>'}).join('');
+  }).catch(function(){});
+}
+function pantallaCompleta(){var e=document.documentElement;if(!document.fullscreenElement){(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}else document.exitFullscreen()}
+
+/* ---------- arranque ---------- */
+document.addEventListener('keydown',function(e){ // pistola lectora: Enter en el lote
+  if(e.key==='Enter'&&document.activeElement===$('e-lote'))cargarLote();
+  if(e.key==='Enter'&&document.activeElement===$('s-lote'))cargarLoteEst();
+  if(e.key==='Enter'&&document.activeElement===$('c-lote'))$('c-operario').focus();
+});
+loading(true);
+api('getInit').then(function(r){loading(false);S.init=r;
+  $('dl-clientes').innerHTML=r.clientes.map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
+  pintarHome();
+  if(LOTE_INICIAL&&!VISTA_INICIAL){abrirConLote(codigoDe(LOTE_INICIAL));return}
+  if(VISTA_INICIAL==='tablero'){$('tv-salir').style.display='none';abrirTablero()}
+  else if(VISTA_INICIAL==='jefe'){
+    $('v-home').classList.remove('on');$('ml-cancel').style.display='none';
+    $('btnSalir').textContent='🔒 Cerrar sesión';$('sub').textContent='Back office';
+    pedirClave('JEFE');
+  }
+}).catch(function(e){loading(false);toast('Ejecuta primero configurarSistema() en Apps Script','err');pintarHome()});
+</script>
+</body>
+</html>
